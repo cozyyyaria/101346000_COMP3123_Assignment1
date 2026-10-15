@@ -1,0 +1,22 @@
+2026-10-15 10:30:00 [INFO]: Server running in development mode on port 3000
+2026-10-15 10:30:00 [INFO]: MongoDB Connected: localhost
+2026-10-15 10:31:15 [INFO]: POST /api/v1/user/signup 201 125ms
+2026-10-15 10:31:15 [INFO]: New user registered: johndoe (john@example.com)
+2026-10-15 10:32:00 [INFO]: POST /api/v1/user/login 200 89ms
+2026-10-15 10:32:00 [INFO]: User logged in: johndoe
+2026-10-15 10:33:00 [INFO]: User johndoe authenticated successfully
+2026-10-15 10:33:00 [INFO]: POST /api/v1/emp/employees 201 45ms
+2026-10-15 10:33:00 [INFO]: User johndoe created employee: Jane Smith
+2026-10-15 10:34:00 [INFO]: User johndoe authenticated successfully
+2026-10-15 10:34:00 [INFO]: GET /api/v1/emp/employees 200 32ms
+2026-10-15 10:34:00 [INFO]: User johndoe fetched 3 employees
+2026-10-15 10:35:00 [WARN]: Validation failed: [{"msg":"Email is required","path":"email"}]
+2026-10-15 10:36:00 [WARN]: Login failed: Invalid password for user johndoe
+2026-10-15 10:37:00 [WARN]: Auth failed: No token provided
+2026-10-15 10:38:00 [WARN]: User johndoe tried to access non-existent/unauthorized employee: 507f1f77bcf86cd799439011
+2026-10-15 10:39:00 [INFO]: User johndoe authenticated successfully
+2026-10-15 10:39:00 [INFO]: User johndoe deleted employee: Jane Smith
+
+Note: This is a sample log file showing typical log entries.
+Actual logs are generated automatically when the application runs.
+Sensitive information (passwords, tokens) is NEVER logged.
