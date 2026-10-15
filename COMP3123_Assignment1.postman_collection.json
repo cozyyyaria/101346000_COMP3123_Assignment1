@@ -1,0 +1,754 @@
+{
+	"info": {
+		"_postman_id": "comp3123-assignment1",
+		"name": "COMP3123 Assignment 1 - 101346000",
+		"description": "Secure RESTful API with Node.js, Express, and MongoDB\n\nStudent: 101346000\n\nThis collection tests all required endpoints including:\n- User authentication (signup/login)\n- Employee CRUD operations\n- Error handling\n- Rate limiting\n- Authorization (data ownership)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000/api/v1"
+		},
+		{
+			"key": "token",
+			"value": ""
+		},
+		{
+			"key": "employeeId",
+			"value": ""
+		}
+	],
+	"item": [
+		{
+			"name": "Health Check",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/health",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "3000",
+							"path": ["health"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "User Authentication",
+			"item": [
+				{
+					"name": "1. Signup - Success",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('token', jsonData.data.token);",
+									"    console.log('Token saved:', jsonData.data.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"testuser1\",\n    \"email\": \"test1@example.com\",\n    \"password\": \"Test1234\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/user/signup",
+							"host": ["{{baseUrl}}"],
+							"path": ["user", "signup"]
+						}
+					}
+				},
+				{
+					"name": "2. Signup - Duplicate Username (409)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"testuser1\",\n    \"email\": \"different@example.com\",\n    \"password\": \"Test1234\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/user/signup",
+							"host": ["{{baseUrl}}"],
+							"path": ["user", "signup"]
+						}
+					}
+				},
+				{
+					"name": "3. Signup - Duplicate Email (409)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"differentuser\",\n    \"email\": \"test1@example.com\",\n    \"password\": \"Test1234\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/user/signup",
+							"host": ["{{baseUrl}}"],
+							"path": ["user", "signup"]
+						}
+					}
+				},
+				{
+					"name": "4. Signup - Invalid Email (400)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"newuser\",\n    \"email\": \"invalid-email\",\n    \"password\": \"Test1234\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/user/signup",
+							"host": ["{{baseUrl}}"],
+							"path": ["user", "signup"]
+						}
+					}
+				},
+				{
+					"name": "5. Signup - Invalid Password (400)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"newuser\",\n    \"email\": \"new@example.com\",\n    \"password\": \"short\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/user/signup",
+							"host": ["{{baseUrl}}"],
+							"path": ["user", "signup"]
+						}
+					}
+				},
+				{
+					"name": "6. Signup - Missing Fields (400)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"newuser\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/user/signup",
+							"host": ["{{baseUrl}}"],
+							"path": ["user", "signup"]
+						}
+					}
+				},
+				{
+					"name": "7. Login with Email - Success",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('token', jsonData.data.token);",
+									"    console.log('Token saved:', jsonData.data.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"test1@example.com\",\n    \"password\": \"Test1234\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/user/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["user", "login"]
+						}
+					}
+				},
+				{
+					"name": "8. Login with Username - Success",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('token', jsonData.data.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"testuser1\",\n    \"password\": \"Test1234\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/user/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["user", "login"]
+						}
+					}
+				},
+				{
+					"name": "9. Login - Invalid Credentials (401)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"test1@example.com\",\n    \"password\": \"WrongPassword\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/user/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["user", "login"]
+						}
+					}
+				},
+				{
+					"name": "10. Login - Missing Credentials (400)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"password\": \"Test1234\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/user/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["user", "login"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Employee CRUD",
+			"item": [
+				{
+					"name": "1. Create Employee - Success (201)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('employeeId', jsonData.data._id);",
+									"    console.log('Employee ID saved:', jsonData.data._id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"first_name\": \"John\",\n    \"last_name\": \"Doe\",\n    \"email\": \"john.doe@company.com\",\n    \"position\": \"Software Developer\",\n    \"salary\": 75000,\n    \"date_of_joining\": \"2024-01-15\",\n    \"department\": \"Engineering\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/emp/employees",
+							"host": ["{{baseUrl}}"],
+							"path": ["emp", "employees"]
+						}
+					}
+				},
+				{
+					"name": "2. Create Employee - Missing Fields (400)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"first_name\": \"Jane\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/emp/employees",
+							"host": ["{{baseUrl}}"],
+							"path": ["emp", "employees"]
+						}
+					}
+				},
+				{
+					"name": "3. Create Employee - Invalid Email (400)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"first_name\": \"Jane\",\n    \"last_name\": \"Smith\",\n    \"email\": \"invalid-email\",\n    \"position\": \"Designer\",\n    \"salary\": 65000,\n    \"date_of_joining\": \"2024-02-01\",\n    \"department\": \"Design\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/emp/employees",
+							"host": ["{{baseUrl}}"],
+							"path": ["emp", "employees"]
+						}
+					}
+				},
+				{
+					"name": "4. Create Employee - Invalid Salary (400)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"first_name\": \"Jane\",\n    \"last_name\": \"Smith\",\n    \"email\": \"jane@company.com\",\n    \"position\": \"Designer\",\n    \"salary\": -5000,\n    \"date_of_joining\": \"2024-02-01\",\n    \"department\": \"Design\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/emp/employees",
+							"host": ["{{baseUrl}}"],
+							"path": ["emp", "employees"]
+						}
+					}
+				},
+				{
+					"name": "5. Create Employee - No JWT (401)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"first_name\": \"Jane\",\n    \"last_name\": \"Smith\",\n    \"email\": \"jane@company.com\",\n    \"position\": \"Designer\",\n    \"salary\": 65000,\n    \"date_of_joining\": \"2024-02-01\",\n    \"department\": \"Design\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/emp/employees",
+							"host": ["{{baseUrl}}"],
+							"path": ["emp", "employees"]
+						}
+					}
+				},
+				{
+					"name": "6. Get All Employees (200)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/emp/employees",
+							"host": ["{{baseUrl}}"],
+							"path": ["emp", "employees"]
+						}
+					}
+				},
+				{
+					"name": "7. Get Employee by ID (200)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/emp/employees/{{employeeId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["emp", "employees", "{{employeeId}}"]
+						}
+					}
+				},
+				{
+					"name": "8. Get Employee - Invalid ID (400)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/emp/employees/invalid-id",
+							"host": ["{{baseUrl}}"],
+							"path": ["emp", "employees", "invalid-id"]
+						}
+					}
+				},
+				{
+					"name": "9. Get Employee - Not Found (404)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/emp/employees/507f1f77bcf86cd799439011",
+							"host": ["{{baseUrl}}"],
+							"path": ["emp", "employees", "507f1f77bcf86cd799439011"]
+						}
+					}
+				},
+				{
+					"name": "10. Update Employee (200)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"salary\": 80000,\n    \"position\": \"Senior Software Developer\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/emp/employees/{{employeeId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["emp", "employees", "{{employeeId}}"]
+						}
+					}
+				},
+				{
+					"name": "11. Delete Employee (204)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/emp/employees?eid={{employeeId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["emp", "employees"],
+							"query": [
+								{
+									"key": "eid",
+									"value": "{{employeeId}}"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Two-User Authorization Test",
+			"item": [
+				{
+					"name": "1. Create User B",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('tokenB', jsonData.data.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"testuser2\",\n    \"email\": \"test2@example.com\",\n    \"password\": \"Test1234\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/user/signup",
+							"host": ["{{baseUrl}}"],
+							"path": ["user", "signup"]
+						}
+					}
+				},
+				{
+					"name": "2. User A - Create Employee",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('userAEmployeeId', jsonData.data._id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"first_name\": \"User A\",\n    \"last_name\": \"Employee\",\n    \"email\": \"usera.emp@company.com\",\n    \"position\": \"Manager\",\n    \"salary\": 90000,\n    \"date_of_joining\": \"2024-01-01\",\n    \"department\": \"Management\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/emp/employees",
+							"host": ["{{baseUrl}}"],
+							"path": ["emp", "employees"]
+						}
+					}
+				},
+				{
+					"name": "3. User B - Try to Access User A Employee (404)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{tokenB}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/emp/employees/{{userAEmployeeId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["emp", "employees", "{{userAEmployeeId}}"]
+						}
+					}
+				},
+				{
+					"name": "4. User B - Try to Update User A Employee (404)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{tokenB}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"salary\": 1000000\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/emp/employees/{{userAEmployeeId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["emp", "employees", "{{userAEmployeeId}}"]
+						}
+					}
+				},
+				{
+					"name": "5. User B - Try to Delete User A Employee (404)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{tokenB}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/emp/employees?eid={{userAEmployeeId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["emp", "employees"],
+							"query": [
+								{
+									"key": "eid",
+									"value": "{{userAEmployeeId}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "6. User B - Get All (Should be Empty)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{tokenB}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/emp/employees",
+							"host": ["{{baseUrl}}"],
+							"path": ["emp", "employees"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Security Tests",
+			"item": [
+				{
+					"name": "Invalid JWT Token (401)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer invalidtoken123"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/emp/employees",
+							"host": ["{{baseUrl}}"],
+							"path": ["emp", "employees"]
+						}
+					}
+				},
+				{
+					"name": "Route Not Found (404)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/nonexistent",
+							"host": ["{{baseUrl}}"],
+							"path": ["nonexistent"]
+						}
+					}
+				}
+			]
+		}
+	]
+}
