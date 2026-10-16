@@ -64,21 +64,16 @@ const userSchema = new mongoose.Schema({
  *   The "10" is the cost factor (higher = slower but more secure)
  * - bcrypt.hash() combines password + salt into a secure hash
  */
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function() {
     // Only hash the password if it was modified (or is new)
     if (!this.isModified('password')) {
-        return next();
+        return;
     }
     
-    try {
-        // Generate salt (random data to make hash unique)
-        const salt = await bcrypt.genSalt(10);
-        // Hash password with salt
-        this.password = await bcrypt.hash(this.password, salt);
-        next();
-    } catch (error) {
-        next(error);
-    }
+    // Generate salt (random data to make hash unique)
+    const salt = await bcrypt.genSalt(10);
+    // Hash password with salt
+    this.password = await bcrypt.hash(this.password, salt);
 });
 
 /**
@@ -107,9 +102,7 @@ userSchema.methods.toJSON = function() {
     return user;
 };
 
-// Create indexes for faster lookups
-userSchema.index({ email: 1 });
-userSchema.index({ username: 1 });
+// unique: true already creates indexes for email and username
 
 // Create and export the model
 // mongoose.model('User', userSchema) creates a "users" collection in MongoDB

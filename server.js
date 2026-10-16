@@ -38,6 +38,49 @@ const employeeRoutes = require('./routes/employeeRoutes');
 // Initialize Express app
 const app = express();
 
+// Required on Vercel so rate limiting can read the real client IP
+app.set('trust proxy', 1);
+
+app.get('/', (req, res) => {
+    res.status(200).json({
+        status: true,
+        message: 'COMP3123 Assignment 1 API',
+        student: '101346000',
+        health: '/health',
+        endpoints: {
+            signup: 'POST /api/v1/user/signup',
+            login: 'POST /api/v1/user/login',
+            employees: '/api/v1/emp/employees'
+        }
+    });
+});
+
+/**
+ * HEALTH CHECK ENDPOINT
+ *
+ * Placed before the database connection so /health still works
+ * if MongoDB is slow or unreachable.
+ */
+app.get('/health', (req, res) => {
+    res.status(200).json({
+        status: true,
+        message: 'API is healthy',
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV,
+        uptime: process.uptime()
+    });
+});
+
+// Connect to MongoDB on each request if needed (serverless-friendly)
+app.use(async (req, res, next) => {
+    try {
+        await connectDB();
+        next();
+    } catch (error) {
+        next(error);
+    }
+});
+
 /**
  * HELMET - Security Headers
  * 
@@ -135,24 +178,6 @@ app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 /**
- * HEALTH CHECK ENDPOINT
- * 
- * WHY?
- * - Quick way to verify API is running
- * - Used by monitoring tools and load balancers
- * - Should always respond quickly
- */
-app.get('/health', (req, res) => {
-    res.status(200).json({
-        status: true,
-        message: 'API is healthy',
-        timestamp: new Date().toISOString(),
-        environment: process.env.NODE_ENV,
-        uptime: process.uptime()
-    });
-});
-
-/**
  * MOUNT ROUTES
  * 
  * app.use(BASE_PATH, ROUTER)
@@ -180,17 +205,17 @@ app.use(errorHandler);
 
 /**
  * START SERVER
- * 
- * Connect to database first, then start listening
+ *
+ * Locally we listen on a port.
+ * On Vercel, the platform imports this file and uses the exported app.
+ * Do not call app.listen() on Vercel.
  */
 const PORT = process.env.PORT || 3000;
 
 const startServer = async () => {
     try {
-        // Connect to MongoDB
         await connectDB();
-        
-        // Start Express server
+
         app.listen(PORT, () => {
             logger.info(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
             console.log(`
@@ -211,7 +236,9 @@ const startServer = async () => {
     }
 };
 
-startServer();
+if (!process.env.VERCEL) {
+    startServer();
+}
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {

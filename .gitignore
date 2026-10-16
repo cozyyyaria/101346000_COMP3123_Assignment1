@@ -17,9 +17,13 @@ Thumbs.db
 *.swp
 *.swo
 
+# Vercel
+.vercel/
+
 # Build output
 dist/
 build/
 
 # Test coverage
 coverage/
+.vercel

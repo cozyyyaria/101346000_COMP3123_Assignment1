@@ -19,21 +19,28 @@ const mongoose = require('mongoose');
 const logger = require('../utils/logger');
 
 const connectDB = async () => {
+    // Reuse an existing connection (important on Vercel serverless)
+    if (mongoose.connection.readyState === 1) {
+        return mongoose.connection;
+    }
+
     try {
-        // mongoose.connect() returns a promise
-        // We use async/await to handle it cleanly
         const conn = await mongoose.connect(process.env.MONGODB_URI);
-        
+
         logger.info(`MongoDB Connected: ${conn.connection.host}`);
         console.log(`MongoDB Connected: ${conn.connection.host}`);
-        
+
         return conn;
     } catch (error) {
         logger.error(`Database connection error: ${error.message}`);
         console.error(`Error: ${error.message}`);
-        // Exit process with failure code
-        // In production, you might want to retry instead
-        process.exit(1);
+
+        // process.exit would crash the Vercel function; only exit locally
+        if (!process.env.VERCEL) {
+            process.exit(1);
+        }
+
+        throw error;
     }
 };
 

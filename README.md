@@ -163,7 +163,8 @@ npm start
 
 The API will be running at `http://localhost:3000`
 
-Health check: `GET http://localhost:3000/health`
+- Root: `GET http://localhost:3000/`
+- Health check: `GET http://localhost:3000/health`
 
 ---
 
@@ -191,6 +192,15 @@ Health check: `GET http://localhost:3000/health`
 ```
 http://localhost:3000/api/v1
 ```
+
+Live API: `https://comp3123-assignment1-101346000.vercel.app/api/v1`
+
+### General Endpoints
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| GET | `/` | API welcome / available routes | No |
+| GET | `/health` | Health check | No |
 
 ### User Endpoints
 
@@ -566,7 +576,29 @@ logs/
 
 ## Health Check
 
-### Endpoint
+### Root endpoint
+
+```
+GET /
+```
+
+Returns a short JSON summary of the API so opening the deployed URL in a browser does not look like an error.
+
+```json
+{
+    "status": true,
+    "message": "COMP3123 Assignment 1 API",
+    "student": "101346000",
+    "health": "/health",
+    "endpoints": {
+        "signup": "POST /api/v1/user/signup",
+        "login": "POST /api/v1/user/login",
+        "employees": "/api/v1/emp/employees"
+    }
+}
+```
+
+### Health endpoint
 
 ```
 GET /health
@@ -668,11 +700,31 @@ Password: Test1234
 
 ---
 
-## Deployment
+## Deployment (Vercel)
 
-This API can be deployed to Vercel. See the `vercel.json` configuration file.
+This Express API is deployed to [Vercel](https://vercel.com/guides/using-express-with-vercel). Vercel imports `server.js` as a serverless function.
 
-**Live URL:** [Add your Vercel URL here after deployment]
+### Environment variables on Vercel
+
+Add these in the Vercel project settings (do not commit `.env`):
+
+```
+MONGODB_URI
+JWT_SECRET
+JWT_EXPIRES_IN=24h
+NODE_ENV=production
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+AUTH_RATE_LIMIT_MAX=5
+```
+
+MongoDB Atlas must allow connections from anywhere (`0.0.0.0/0`) so Vercel can reach the database.
+
+**Live URL:** https://comp3123-assignment1-101346000.vercel.app
+
+- Root: https://comp3123-assignment1-101346000.vercel.app/
+- Health check: https://comp3123-assignment1-101346000.vercel.app/health
+- Signup: `POST https://comp3123-assignment1-101346000.vercel.app/api/v1/user/signup`
 
 ---
 

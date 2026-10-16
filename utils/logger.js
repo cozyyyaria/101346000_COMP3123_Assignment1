@@ -29,35 +29,38 @@ const logFormat = winston.format.combine(
     })
 );
 
-// Create the logger
-const logger = winston.createLogger({
-    level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
-    format: logFormat,
-    transports: [
-        // Write all logs to combined.log
-        new winston.transports.File({ 
+const transports = [];
+
+// Vercel has a read-only filesystem, so file logs only run locally
+if (!process.env.VERCEL) {
+    transports.push(
+        new winston.transports.File({
             filename: path.join(__dirname, '../logs/combined.log'),
-            maxsize: 5242880, // 5MB
+            maxsize: 5242880,
             maxFiles: 5
         }),
-        // Write error logs to error.log
-        new winston.transports.File({ 
+        new winston.transports.File({
             filename: path.join(__dirname, '../logs/error.log'),
             level: 'error',
             maxsize: 5242880,
             maxFiles: 5
         })
-    ]
-});
+    );
+}
 
-// In development, also log to console with colors
-if (process.env.NODE_ENV !== 'production') {
-    logger.add(new winston.transports.Console({
-        format: winston.format.combine(
+transports.push(new winston.transports.Console({
+    format: process.env.NODE_ENV === 'production'
+        ? logFormat
+        : winston.format.combine(
             winston.format.colorize(),
             winston.format.simple()
         )
-    }));
-}
+}));
+
+const logger = winston.createLogger({
+    level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+    format: logFormat,
+    transports
+});
 
 module.exports = logger;
